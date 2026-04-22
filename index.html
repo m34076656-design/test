@@ -1,189 +1,243 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Spin Wheel</title>
-  <style>
-    body {
-      margin: 0;
-      background: radial-gradient(circle, #1a0033, #000);
-      color: white;
-      text-align: center;
-      font-family: Arial;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rigged Spin Wheel Pro</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: radial-gradient(circle at top, #2b1055, #000000);
+    color: white;
+    text-align: center;
+    min-height: 100vh;
+  }
 
-    h1 { margin-top: 20px; }
+  h1 {
+    margin-top: 20px;
+    font-size: 2.2rem;
+    text-shadow: 0 0 10px gold;
+  }
 
-    canvas {
-      margin-top: 20px;
-      border-radius: 50%;
-      box-shadow: 0 0 25px gold;
-    }
+  #pointer {
+    width: 0;
+    height: 0;
+    border-left: 22px solid transparent;
+    border-right: 22px solid transparent;
+    border-bottom: 35px solid gold;
+    margin: auto;
+    position: relative;
+    top: 25px;
+    z-index: 10;
+    filter: drop-shadow(0 0 10px gold);
+  }
 
-    #pointer {
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 30px solid gold;
-      margin: auto;
-      position: relative;
-      top: 30px;
-      z-index: 2;
-    }
+  canvas {
+    margin-top: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 35px rgba(255,215,0,0.8);
+    background: rgba(255,255,255,0.05);
+  }
 
-    button {
-      margin: 10px;
-      padding: 12px 25px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
+  button {
+    margin: 8px;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, #ff9800, #ff5722);
+    box-shadow: 0 0 10px rgba(255,152,0,0.5);
+  }
 
-    #settings {
-      display: none;
-      background: #111;
-      padding: 15px;
-      margin: 20px;
-      border-radius: 10px;
-    }
+  button:hover { transform: scale(1.05); }
 
-    input {
-      padding: 5px;
-      margin: 5px;
-      width: 250px;
-    }
-  </style>
+  #settings {
+    display: none;
+    width: 90%;
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 20px rgba(255,255,255,0.08);
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: none;
+  }
+
+  #winnerPopup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+  }
+
+  .popup-box {
+    background: linear-gradient(145deg, #2e004f, #4a0072);
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0 0 30px gold;
+    animation: pop 0.4s ease;
+  }
+
+  .popup-box h2 {
+    margin: 0 0 15px;
+    font-size: 2rem;
+    color: gold;
+  }
+
+  @keyframes pop {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+</style>
 </head>
-
 <body>
 
-<h1>🎡 SPIN THE WHEEL</h1>
-
+<h1>🎡 RIGGED SPIN WHEEL</h1>
 <div id="pointer"></div>
-<canvas id="wheel" width="400" height="400"></canvas>
+<canvas id="wheel" width="450" height="450"></canvas>
 
-<br>
-<button onclick="spin()">SPIN</button>
-<button onclick="toggleSettings()">⚙️ Settings</button>
-
-<div id="settings">
-  <p>Names (comma separated):</p>
-  <input id="namesInput" value="A,B,C,D,E,F">
-  <br>
-  <p>Preset results (optional):</p>
-  <input id="presetInput" placeholder="A,C,B">
-  <br>
-  <button onclick="applySettings()">Apply</button>
+<div>
+  <button onclick="spin()">SPIN</button>
+  <button onclick="toggleSettings()">⚙ Settings</button>
 </div>
 
-<audio id="tick" src="https://www.soundjay.com/mechanical/sounds/click-07.mp3"></audio>
-<audio id="win" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+<div id="settings">
+  <h3>Control Panel</h3>
+  <label>Names (comma separated)</label>
+  <input id="namesInput" value="Alice,Bob,Charlie,David,Eva,Fred">
+  <label>Preset winners order</label>
+  <input id="presetInput" placeholder="Alice,Charlie,Bob">
+  <label><input type="checkbox" id="riggedMode" checked> Rigged Mode ON</label>
+  <br><br>
+  <button onclick="applySettings()">Apply Settings</button>
+  <button onclick="resetWheel()">Reset Wheel</button>
+</div>
+
+<div id="winnerPopup">
+  <div class="popup-box">
+    <h2 id="winnerText">Winner: </h2>
+    <button onclick="hideWinner()">Hide</button>
+  </div>
+</div>
 
 <script>
-const canvas = document.getElementById("wheel");
-const ctx = canvas.getContext("2d");
-
-let names = ["A","B","C","D","E","F"];
-let colors = ["#ff0000","#ff6600","#ffcc00","#33cc33","#00cccc","#0066cc","#9900cc","#ff0099"];
-
+const canvas = document.getElementById('wheel');
+const ctx = canvas.getContext('2d');
+let names = ['Alice','Bob','Charlie','David','Eva','Fred'];
+let colors = ['#ff4d4d','#ff9933','#ffd633','#66cc66','#33cccc','#3399ff','#9966ff','#ff66cc'];
 let predetermined = [];
-let index = 0;
-
+let currentPresetIndex = 0;
 let angle = 0;
 let spinning = false;
 
 function drawWheel() {
-  let arc = (2 * Math.PI) / names.length;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const arc = (2 * Math.PI) / names.length;
 
-  for (let i = 0; i < names.length; i++) {
+  names.forEach((name, i) => {
+    const start = i * arc + angle;
+    const end = start + arc;
+
     ctx.beginPath();
+    ctx.moveTo(225,225);
+    ctx.arc(225,225,220,start,end);
     ctx.fillStyle = colors[i % colors.length];
-    ctx.moveTo(200, 200);
-    ctx.arc(200, 200, 200, i * arc + angle, (i + 1) * arc + angle);
     ctx.fill();
 
     ctx.save();
-    ctx.translate(200, 200);
-    ctx.rotate(i * arc + arc / 2 + angle);
-    ctx.fillStyle = "white";
-    ctx.font = "bold 14px Arial";
-    ctx.fillText(names[i], 100, 5);
+    ctx.translate(225,225);
+    ctx.rotate(start + arc/2);
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 16px Arial';
+    ctx.fillText(name, 110, 5);
     ctx.restore();
-  }
+  });
 }
 
 function spin() {
-  if (spinning) return;
+  if (spinning || names.length === 0) return;
   spinning = true;
 
-  let result;
+  const rigged = document.getElementById('riggedMode').checked;
+  let winner;
 
-  if (predetermined.length > 0) {
-    result = predetermined[index];
-    index = (index + 1) % predetermined.length;
+  if (rigged && predetermined.length > 0) {
+    winner = predetermined[currentPresetIndex % predetermined.length];
+    currentPresetIndex++;
   } else {
-    result = names[Math.floor(Math.random() * names.length)];
+    winner = names[Math.floor(Math.random() * names.length)];
   }
 
-  let resultIndex = names.indexOf(result);
-  let arc = (2 * Math.PI) / names.length;
+  let winnerIndex = names.indexOf(winner);
+  const arc = (2 * Math.PI) / names.length;
+  let target = (3 * Math.PI / 2) - (winnerIndex * arc + arc / 2);
+  let finalAngle = 8 * Math.PI + target;
+  let startAngle = angle;
+  let duration = 4000;
+  let startTime = null;
 
-  let targetAngle = (3 * Math.PI / 2) - (resultIndex * arc + arc / 2);
-
-  let spinTime = 0;
-  let spinDuration = 4000;
-
-  function animate() {
-    spinTime += 30;
-    let ease = 1 - Math.pow(1 - spinTime / spinDuration, 3);
-    angle = ease * (10 * Math.PI + targetAngle);
-
-    ctx.clearRect(0, 0, 400, 400);
+  function animate(timestamp) {
+    if (!startTime) startTime = timestamp;
+    let progress = Math.min((timestamp - startTime) / duration, 1);
+    let ease = 1 - Math.pow(1 - progress, 3);
+    angle = startAngle + (finalAngle - startAngle) * ease;
     drawWheel();
 
-    document.getElementById("tick").play();
-
-    if (spinTime < spinDuration) {
+    if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
       spinning = false;
-      document.getElementById("win").play();
+      showWinner(winner);
+      names.splice(winnerIndex, 1);
+      drawWheel();
     }
   }
+  requestAnimationFrame(animate);
+}
 
-  animate();
+function showWinner(name) {
+  document.getElementById('winnerText').innerText = `🎉 Winner: ${name}`;
+  document.getElementById('winnerPopup').style.display = 'flex';
+}
+
+function hideWinner() {
+  document.getElementById('winnerPopup').style.display = 'none';
 }
 
 function toggleSettings() {
-  let s = document.getElementById("settings");
-  s.style.display = s.style.display === "none" ? "block" : "none";
+  const settings = document.getElementById('settings');
+  settings.style.display = settings.style.display === 'block' ? 'none' : 'block';
 }
 
 function applySettings() {
-  let newNames = document.getElementById("namesInput").value.split(",");
-
-  if (newNames.length < 4 || newNames.length > 10) {
-    alert("Choose between 4 and 10 options");
-    return;
-  }
-
-  names = newNames.map(n => n.trim());
-  predetermined = document.getElementById("presetInput").value
-    .split(",")
-    .map(n => n.trim())
-    .filter(n => n);
-
-  index = 0;
+  names = document.getElementById('namesInput').value.split(',').map(n => n.trim()).filter(Boolean);
+  predetermined = document.getElementById('presetInput').value.split(',').map(n => n.trim()).filter(Boolean);
+  currentPresetIndex = 0;
   angle = 0;
-
-  ctx.clearRect(0, 0, 400, 400);
   drawWheel();
+}
+
+function resetWheel() {
+  applySettings();
 }
 
 drawWheel();
 </script>
-
 </body>
 </html>
